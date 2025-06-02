@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Parkinson's Detection App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    html { scroll-behavior: smooth; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(145deg, #1a1a2e, #16213e);
+      color: #e0e0e0;
+      overflow-x: hidden;
+      line-height: 1.6;
+      position: relative;
+    }
+    header {
+      background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+      color: white;
+      padding: 100px 20px 80px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+      z-index: 10;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(to right, #00e1ff, #0074d9);
+      animation: rainbow 8s linear infinite;
+    }
+    @keyframes rainbow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+    header img {
+      height: 100px;
+      margin-bottom: 25px;
+      animation: fadeIn 2s ease, pulse 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 15px rgba(0, 225, 255, 0.6));
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    header h1 {
+      font-size: 48px;
+      margin-bottom: 15px;
+      animation: slideDown 1.5s ease;
+      text-shadow: 0 4px 10px rgba(0,0,0,0.6);
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    header p {
+      font-size: 22px;
+      color: #d3e9ff;
+      max-width: 800px;
+      margin: 0 auto;
+      animation: fadeIn 2s ease 0.5s both;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideDown { from { transform: translateY(-40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    nav {
+      background: rgba(0, 0, 0, 0.9);
+      padding: 18px 0;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+      font-weight: 600;
+      backdrop-filter: blur(8px);
+    }
+    nav a, nav .dropbtn {
+      color: #ffffff;
+      text-decoration: none;
+      margin: 0 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      user-select: none;
+      font-size: 16px;
+      position: relative;
+      padding: 5px 0;
+    }
+    nav a:hover, nav .dropbtn:hover {
+      color: #00e1ff;
+      text-shadow: 0 0 10px rgba(0, 225, 255, 0.6);
+    }
+    nav a::after, nav .dropbtn::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #00e1ff;
+      transition: width 0.3s ease;
+    }
+    nav a:hover::after, nav .dropbtn:hover::after {
+      width: 100%;
+    }
+    /* Dropdown container */
+    .dropdown {
+      display: inline-block;
+      position: relative;
+      margin: 0 25px;
+    }
+    /* Dropdown content (hidden by default) */
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: rgba(22, 33, 62, 0.95);
+      min-width: 160px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+      border-radius: 8px;
+      z-index: 1001;
+      right: 0;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 225, 255, 0.2);
+      overflow: hidden;
+    }
+    /* Links inside dropdown */
+    .dropdown-content a {
+      color: #e0e0e0;
+      padding: 12px 20px;
+      text-decoration: none;
+      display: block;
+      font-weight: 500;
+      font-size: 15px;
+      transition: all 0.3s;
+    }
+    .dropdown-content a:hover {
+      background-color: rgba(0, 225, 255, 0.2);
+      color: #00e1ff;
+      padding-left: 25px;
+    }
+    /* Show the dropdown menu on hover */
+    .dropdown:hover .dropdown-content {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    section {
+      padding: 80px 20px;
+      max-width: 1200px;
+      margin: auto;
+      animation: sectionFade 0.8s ease-in-out;
+      position: relative;
+      z-index: 5;
+    }
+    @keyframes sectionFade {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    h2 {
+      font-size: 36px;
+      color: #00e1ff;
+      margin-bottom: 25px;
+      position: relative;
+      font-weight: 700;
+    }
+    h2::after {
+      content: '';
+      width: 70px;
+      height: 4px;
+      background: linear-gradient(to right, #00e1ff, #0074d9);
+      position: absolute;
+      bottom: -12px;
+      left: 0;
+      border-radius: 4px;
+    }
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(36, 36, 62, 0.8), rgba(48, 43, 99, 0.9));
+      border-left: 6px solid #00e1ff;
+      padding: 40px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+      border-radius: 15px;
+      margin-bottom: 50px;
+      transition: all 0.4s ease;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(0, 225, 255, 0.1);
+    }
+    .highlight-box:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+      border-color: rgba(0, 225, 255, 0.3);
+    }
+    .screenshots {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      margin-top: 30px;
+    }
+    .screenshots img {
+      width: 100%;
+      border-radius: 15px;
+      padding: 10px;
+      background: linear-gradient(to bottom right, #2c2c54, #0f0c29);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      transition: all 0.4s ease;
+      border: 1px solid rgba(0, 225, 255, 0.1);
+    }
+    .screenshots img:hover {
+      transform: scale(1.05) rotate(1deg);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+    }
+    #download a, button[disabled] {
+      display: inline-block;
+      background: linear-gradient(to right, #00e1ff, #0074d9);
+      color: white;
+      padding: 16px 35px;
+      margin-top: 25px;
+      border: none;
+      border-radius: 35px;
+      font-weight: bold;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      font-size: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    #download a::before, button[disabled]::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: 0.5s;
+    }
+    #download a:hover::before {
+      left: 100%;
+    }
+    button[disabled] {
+      background: #777;
+      cursor: not-allowed;
+    }
+    #download a:hover {
+      background: linear-gradient(to right, #00c3e3, #005fa3);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    }
+    iframe {
+      width: 100%;
+      max-width: 900px;
+      height: 500px;
+      border: none;
+      margin: 50px auto;
+      display: block;
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+      transition: all 0.3s ease;
+    }
+    iframe:hover {
+      transform: scale(1.01);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }
+    footer {
+      background: linear-gradient(to bottom, #0f0c29, #1a1a2e);
+      text-align: center;
+      padding: 50px 20px;
+      color: #ccc;
+      font-size: 1em;
+      letter-spacing: 0.5px;
+      position: relative;
+      z-index: 10;
+    }
+    footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(to right, #00e1ff, #0074d9);
+    }
+    /* Login Section Styles */
+    .login-options {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 50px;
+    }
+    .login-box {
+      background: linear-gradient(135deg, rgba(36, 36, 62, 0.8), rgba(48, 43, 99, 0.9));
+      padding: 35px;
+      border-radius: 20px;
+      width: 320px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      border: 2px solid transparent;
+      backdrop-filter: blur(5px);
+    }
+    .login-box:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+      border-color: rgba(0, 225, 255, 0.3);
+    }
+    .login-box.active {
+      border-color: #00e1ff;
+      box-shadow: 0 0 30px rgba(0, 225, 255, 0.4);
+      transform: translateY(-5px);
+    }
+    .login-box h3 {
+      color: #00e1ff;
+      margin-bottom: 20px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .login-box p {
+      color: #d3e9ff;
+      font-size: 16px;
+    }
+    .login-form {
+      display: none;
+      background: linear-gradient(135deg, rgba(36, 36, 62, 0.8), rgba(48, 43, 99, 0.9));
+      padding: 40px;
+      border-radius: 20px;
+      margin-top: 40px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(0, 225, 255, 0.2);
+      animation: fadeIn 0.5s ease;
+    }
+    .login-form.active {
+      display: block;
+    }
+    .login-form h3 {
+      color: #00e1ff;
+      margin-bottom: 25px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: 600;
+    }
+    .form-group {
+      margin-bottom: 25px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 10px;
+      color: #d3e9ff;
+      font-weight: 500;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: 10px;
+      border: none;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 16px;
+      transition: all 0.3s;
+      border: 1px solid rgba(0, 225, 255, 0.1);
+    }
+    .form-group input:focus {
+      outline: none;
+      background-color: rgba(255, 255, 255, 0.15);
+      border-color: rgba(0, 225, 255, 0.3);
+      box-shadow: 0 0 15px rgba(0, 225, 255, 0.2);
+    }
+    .form-group input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    .login-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(to right, #00e1ff, #0074d9);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 16px;
+      margin-top: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    .login-btn:hover {
+      background: linear-gradient(to right, #00c3e3, #005fa3);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    }
+    .login-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: 0.5s;
+    }
+    .login-btn:hover::before {
+      left: 100%;
+    }
+    /* Team Section Styles */
+    .team-members {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 40px;
+      margin-top: 40px;
+    }
+    .team-member {
+      background: linear-gradient(135deg, rgba(36, 36, 62, 0.8), rgba(48, 43, 99, 0.9));
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      transition: all 0.4s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(0, 225, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    .team-member:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+      border-color: rgba(0, 225, 255, 0.3);
+    }
+    .member-photo {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      object-fit: cover;
+      border: 3px solid rgba(0, 225, 255, 0.3);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      transition: all 0.4s ease;
+      position: relative;
+      z-index: 2;
+    }
+    .team-member:hover .member-photo {
+      transform: scale(1.05);
+      border-color: rgba(0, 225, 255, 0.6);
+      box-shadow: 0 10px 30px rgba(0, 225, 255, 0.3);
+    }
+    .team-member h3 {
+      color: #00e1ff;
+      margin-bottom: 10px;
+      font-size: 22px;
+      font-weight: 600;
+    }
+    .team-member p {
+      color: #d3e9ff;
+      font-size: 16px;
+    }
+    .member-frame {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
+      border: 2px solid rgba(0, 225, 255, 0.1);
+      border-radius: 15px;
+      pointer-events: none;
+      transition: all 0.4s ease;
+      z-index: 1;
+    }
+    .team-member:hover .member-frame {
+      border-color: rgba(0, 225, 255, 0.3);
+      transform: scale(0.98);
+    }
+    /* Floating particles for visual appeal */
+    .particle {
+      position: fixed;
+      background: rgba(0, 225, 255, 0.3);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: -1;
+      animation: float 15s infinite linear;
+    }
+    .particle:nth-child(3n) {
+      background: rgba(0, 116, 217, 0.3);
+    }
+    .particle:nth-child(3n+1) {
+      background: rgba(0, 225, 255, 0.2);
+    }
+    .particle:nth-child(3n+2) {
+      background: rgba(48, 43, 99, 0.3);
+    }
+    @keyframes float {
+      0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
+      50% { transform: translateY(-100px) translateX(100px) rotate(180deg); opacity: 0.8; }
+      100% { transform: translateY(0) translateX(0) rotate(360deg); opacity: 1; }
+    }
+    @keyframes float2 {
+      0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
+      50% { transform: translateY(-150px) translateX(-100px) rotate(180deg); opacity: 0.7; }
+      100% { transform: translateY(0) translateX(0) rotate(360deg); opacity: 1; }
+    }
+    @keyframes float3 {
+      0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
+      50% { transform: translateY(100px) translateX(-150px) rotate(180deg); opacity: 0.6; }
+      100% { transform: translateY(0) translateX(0) rotate(360deg); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="logo.png" alt="App Logo">
+  <h1>Parkinson's Detection Application</h1>
+  <p>Revolutionizing Early Diagnosis through ML-Powered Insights</p>
+</header>
+
+<nav>
+  <a href="#intro">About</a>
+  <a href="#download">Download</a>
+  <a href="#features">Features</a>
+  <a href="#instructions">Usage</a>
+  <a href="#about">Team</a>
+  <a href="#snapshots">Snapshots</a>
+  <a href="#contact">Contact</a>
+
+  <div class="dropdown">
+    <span class="dropbtn">Login ▼</span>
+    <div class="dropdown-content">
+      <a href="#doctor-login" onclick="activateLogin('doctor')">Doctor Login</a>
+      <a href="#patient-login" onclick="activateLogin('patient')">Patient Login</a>
+    </div>
+  </div>
+</nav>
+
+<section id="intro">
+  <div class="highlight-box">
+    <h2>About Parkinson's Disease</h2>
+    <p>Parkinson's Disease is a degenerative disorder of the central nervous system that primarily affects motor skills, speech, and handwriting. Early diagnosis leads to better outcomes and improved patient care.</p>
+    <h2>About Our App</h2>
+    <p>This cutting-edge tool combines AI and biomedical data analysis to detect early signs of Parkinson's through three simple, non-invasive tests—designed for ease, speed, and reliability.</p>
+  </div>
+</section>
+
+<!-- Added Login Portal Section -->
+<section id="login-section">
+  <h2>Login Portal</h2>
+  <div class="login-options">
+    <div class="login-box" id="doctor-login-box" onclick="activateLogin('doctor')">
+      <h3>Doctor Login</h3>
+      <p>Access advanced patient analytics and reporting tools</p>
+    </div>
+    <div class="login-box" id="patient-login-box" onclick="activateLogin('patient')">
+      <h3>Patient Login</h3>
+      <p>View your test results and track your progress</p>
+    </div>
+  </div>
+
+  <div class="login-form" id="doctor-login-form">
+    <h3>Doctor Login</h3>
+    <form>
+      <div class="form-group">
+        <label for="doctor-email">Email</label>
+        <input type="email" id="doctor-email" placeholder="Enter your professional email">
+      </div>
+      <div class="form-group">
+        <label for="doctor-password">Password</label>
+        <input type="password" id="doctor-password" placeholder="Enter your password">
+      </div>
+      <div class="form-group">
+        <label for="doctor-license">Medical License Number</label>
+        <input type="text" id="doctor-license" placeholder="Enter your license number">
+      </div>
+      <button type="submit" class="login-btn">Login</button>
+    </form>
+  </div>
+
+  <div class="login-form" id="patient-login-form">
+    <h3>Patient Login</h3>
+    <form>
+      <div class="form-group">
+        <label for="patient-email">Email</label>
+        <input type="email" id="patient-email" placeholder="Enter your email">
+      </div>
+      <div class="form-group">
+        <label for="patient-password">Password</label>
+        <input type="password" id="patient-password" placeholder="Enter your password">
+      </div>
+      <div class="form-group">
+        <label for="patient-id">Patient ID</label>
+        <input type="text" id="patient-id" placeholder="Enter your patient ID">
+      </div>
+      <button type="submit" class="login-btn">Login</button>
+    </form>
+  </div>
+</section>
+
+<section id="media">
+  <h2>Live Preview</h2>
+  <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID_HERE" allowfullscreen></iframe>
+</section>
+
+<section id="mission">
+  <div class="highlight-box">
+    <h2>Our Mission</h2>
+    <p>To make Parkinson's screening accessible across clinics and homes using smart, affordable technology that empowers patients and doctors to act early.</p>
+  </div>
+</section>
+
+<section id="why-us">
+  <div class="highlight-box">
+    <h2>Why Choose Us?</h2>
+    <ul>
+      <li>Fully offline and secure</li>
+      <li>No external devices needed</li>
+      <li>Accurate, trained ML models</li>
+      <li>Minimal setup, intuitive UI</li>
+      <li>Personalized patient reports</li>
+    </ul>
+  </div>
+</section>
+
+<section id="download">
+  <h2>Download</h2>
+  <p><strong>Executable:</strong> <button disabled>Coming Soon</button></p>
+  <p><strong>User Manual:</strong> <a href="User Manual Final.pdf" download>Download PDF</a></p>
+</section>
+
+<section id="features">
+  <h2>Features</h2>
+  <ul>
+    <li>🗣 Voice-based tremor analysis</li>
+    <li>✍️ Spiral and pattern tracing detection</li>
+    <li>🚶 Gait abnormality tracking</li>
+    <li>📄 Custom report generation</li>
+  </ul>
+</section>
+
+<section id="instructions">
+  <h2>How It Works</h2>
+  <ul>
+    <li>OS: Windows 10+</li>
+    <li>RAM: Minimum 8 GB</li>
+    <li>Python 3.9–3.11 (for script execution)</li>
+  </ul>
+  <ol>
+    <li>Launch the app (standalone version or Python script)</li>
+    <li>Choose a module: Speech, Handwriting, or Gait</li>
+    <li>Input data (WAV, image, or video)</li>
+    <li>View AI-powered analysis and download your report</li>
+  </ol>
+</section>
+
+<section id="about">
+  <h2>Meet the Team</h2>
+  <div class="team-members">
+    <div class="team-member">
+      <div class="member-frame"></div>
+      <img src="C:\Users\saisi\Desktop\MP4 Project Docs\Website\siddharth1.jpeg" alt="Sai Siddharth B S" class="member-photo">
+      <h3>Sai Siddharth B S</h3>
+    </div>
+    <div class="team-member">
+      <div class="member-frame"></div>
+      <img src="C:\Users\saisi\Desktop\MP4 Project Docs\Website\sourabh.jpeg" alt="Sourabh Mekkalike" class="member-photo">
+      <h3>Sourabh Mekkalike</h3>
+    </div>
+    <div class="team-member">
+      <div class="member-frame"></div>
+      <img src="C:\Users\saisi\Desktop\MP4 Project Docs\Website\sripathi.jpeg" alt="Sripathi Baliga J" class="member-photo">
+      <h3>Sripathi Baliga J</h3>
+    </div>
+    <div class="team-member">
+      <div class="member-frame"></div>
+      <img src="C:\Users\saisi\Desktop\MP4 Project Docs\Website\vidya.jpeg" alt="Vidya R" class="member-photo">
+      <h3>Vidya R</h3>
+    </div>
+  </div>
+</section>
+
+<section id="snapshots">
+  <h2>App Snapshots</h2>
+  <div class="screenshots">
+    <img src="screenshot1.png" alt="Speech Analysis Module"/>
+    <img src="screenshot2.png" alt="Handwriting Analysis Module"/>
+    <img src="screenshot3.png" alt="Gait Analysis Module"/>
+  </div>
+</section>
+
+<section id="contact">
+  <h2>Contact Us</h2>
+  <p>For queries, partnerships, or support:</p>
+  <p>Email: <a href="mailto:contact@parkinsonapp.com">contact@parkinsonapp.com</a></p>
+  <p>Phone: +1 (234) 567-8901</p>
+</section>
+
+<footer>
+  &copy; 2025 Parkinson's Detection App. All rights reserved.
+</footer>
+
+<script>
+  function activateLogin(type) {
+    const doctorLoginBox = document.getElementById('doctor-login-box');
+    const patientLoginBox = document.getElementById('patient-login-box');
+    const doctorLoginForm = document.getElementById('doctor-login-form');
+    const patientLoginForm = document.getElementById('patient-login-form');
+    
+    if (type === 'doctor') {
+      // Highlight doctor box and show doctor form
+      doctorLoginBox.classList.add('active');
+      patientLoginBox.classList.remove('active');
+      doctorLoginForm.classList.add('active');
+      patientLoginForm.classList.remove('active');
+      
+      // Scroll to the login section
+      document.getElementById('login-section').scrollIntoView({ behavior: 'smooth' });
+    } else {
+      // Highlight patient box and show patient form
+      patientLoginBox.classList.add('active');
+      doctorLoginBox.classList.remove('active');
+      patientLoginForm.classList.add('active');
+      doctorLoginForm.classList.remove('active');
+      
+      // Scroll to the login section
+      document.getElementById('login-section').scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  // Check URL hash on page load
+  window.addEventListener('load', function() {
+    if (window.location.hash === '#doctor-login') {
+      activateLogin('doctor');
+    } else if (window.location.hash === '#patient-login') {
+      activateLogin('patient');
+    }
+  });
+
+  // Create floating particles for visual appeal
+  function createParticles() {
+    const colors = ['rgba(0, 225, 255, 0.3)', 'rgba(0, 225, 255, 0.2)', 'rgba(0, 225, 255, 0.1)'];
+    const animations = ['float', 'float2', 'float3'];
+    
+    for (let i = 0; i < 100; i++) {
+      const particle = document.createElement('div');
+      particle.classList.add('particle');
+      
+      const size = Math.random() * 15 + 5;
+      const posX = Math.random() * window.innerWidth;
+      const posY = Math.random() * window.innerHeight;
+      const delay = Math.random() * 5;
+      const duration = Math.random() * 20 + 10;
+      const animation = animations[Math.floor(Math.random() * animations.length)];
+      
+      particle.style.width = `${size}px`;
+      particle.style.height = `${size}px`;
+      particle.style.left = `${posX}px`;
+      particle.style.top = `${posY}px`;
+      particle.style.animation = `${animation} ${duration}s ease-in-out ${delay}s infinite`;
+      particle.style.opacity = Math.random() * 0.5 + 0.3;
+      
+      document.body.appendChild(particle);
+    }
+  }
+
+  // Initialize particles
+  createParticles();
+</script>
+
+</body>
+</html>
